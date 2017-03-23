@@ -3,6 +3,8 @@
  */
 
 const fs = require('fs')
+const path = require('path')
+const staticServer = require('./static-server')
 
 class App {
  
@@ -16,25 +18,13 @@ class App {
    * 这里执行的是正常目录
    * 中间件
    */
-  let _package = require('../package') 
-
   return (request, response) => { // 高阶函数
-   fs.readFile('./public/index.html', 'utf8', (error, data) => {
-    response.end(data)
-    // response.end(JSON.stringify(_package))
-    // fs.readFile执行的目录是process.cwd() // 这里的./publics是根据nodejs的启动目录
-   })
+   let { url } = request
+   let body = staticServer(url) // 这里同步出来
+   response.end(body) // 必须同步不然response拿不到body
   }
  }
 }
 
-/** @ ES5方法
- * var App = function() {
- * }
- * App.prototype.initServer = function(request, response) {
- *  response.end('end')
- * }
- * 
- */
 
 module.exports = App
