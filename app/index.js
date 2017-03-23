@@ -21,6 +21,7 @@ class App {
   return (request, response) => { // 高阶函数
    let { url } = request
    let body = staticServer(url) // 这里同步出来
+   response.writeHead(200, 'resolve ok', {'X-powered-by': 'Node.js'}) // 自定义header
    response.end(body) // 必须同步不然response拿不到body
   }
  }
