@@ -11,35 +11,24 @@ const fs = require('fs')
 
 //DRY 绝不出现重复代码
 let getPath = url => {
- console.log(process.cwd())
- return path.resolve(process.cwd(), 'public', `.${url}`)
+    // console.log(process.cwd())
+    return path.resolve(process.cwd(), 'public', `.${url}`)
 }
 
-let staticFunc = url => {
- if (url == '/') { url = '/index.html' }
- // let map = {
- //  '/': '/index.html',
- //  '/about': '/about.html',
- //  '/list': '/list.html'
- // }
- // url = map[url] || url // 纯静态注释掉改成路由
- let _path = getPath(url)
- console.log(_path)
- let body = ''
- try {
-  body = fs.readFileSync(_path)
- } catch(err) {
-  body = 'NOT FOUND${err.stack}'
- }
- return body
- // fs.readFile(_path, (err, data) => {
- //  if (err) { data = `NOT FOUND${err.stack}` }
- //  // encoding binary => buffer
- //  // 继承了流stream
- //  // 为了兼容，这里不写转码参数
- //  response.end(data)
- //  // response.end(data, 'binary')
- // }) // 这里异步的不行，写成上面同步的
+let staticFunc = request => {
+    let { url } = request
+    return new Promise((resolve, reject) => {
+        if (url == '/') {
+            url = '/index.html'
+        }
+        let _path = getPath(url)
+        let body = fs.readFile(_path, (err, data) => {
+            if (err) {
+                reject(`NOT FOUND${err.stack}`)
+            }
+            resolve(data)            
+        })
+    })
 }
 
 module.exports = staticFunc

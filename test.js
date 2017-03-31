@@ -1,18 +1,5 @@
-// function(exports, module, require) {
+const p = Promise.resolve(1)
 
-
-// exports default 这个是把default导出
-// module.exports.hello = 'world'
-exports.hello = 'world'
-
-module.exports = {
- hello: 'test'
-}
-
-
-
-
-// }
-
-
-
+const p1 = p.then(val => {
+  
+})
