@@ -1,17 +1,34 @@
 /**
  * 主要核心逻辑入口
  */
+/**
+ * 1、每一块中间件只需要关注修改context对象即可，彼此独立
+ * 2、设计了use和composeMiddleware这两个api用来创建Promise链⛓
+ * 3、开发者可以专注于中间件的开发
+ */
 
 const fs = require('fs')
 const path = require('path')
-const staticServer = require('./static-server')
-const apiServer = require('./api')
-const urlParser = require('./url-parser')
 
 class App {
 
     constructor() {
-
+        this.middlewareArr = []
+        // 设计一个空Promise
+        this.middlewareChain = Promise.resolve()
+    }
+    use(middleware) {
+        this.middlewareArr.push(middleware)
+    }
+    composeMiddleware(context) {
+        let { middlewareArr } = this
+        // 根据中间件数组，创建Promise链条⛓
+        for (let middleware of middlewareArr) {
+            this.middlewareChain = this.middlewareChain.then(() => {
+                return middleware(context)
+            })
+        }
+        return this.middlewareChain
     }
     initServer() {
         /**
@@ -27,32 +44,29 @@ class App {
                 query: {},
                 method: 'get'
             }
-            urlParser(request).then(() => {
-                return apiServer(request)
-            }).then(val => {  
-                if(!val) { // 如果没有值就是静态资源 始终是有值
-                    return staticServer(request)
-                } else {
-                    return val // 返回api数据
+            let context = {
+                req: request,
+                reqCtx: {
+                    body: '', // post 请求数据
+                    query: {}, // 处理客户端 get 请求
+                },
+                res: response,
+                resCtx: {
+                    headers: {}, // reponese 返回的header
+                    body: '' // 返回给前端的内容
                 }
-            }).then(val => {
-                // 数组
+            }
+            
+            this.composeMiddleware(context).then(() => {
+                let { body, headers } = context.resCtx
                 let base = {'X-powered-by': 'Node.js'}
-                let body = ''
-                if(val instanceof Buffer) { // Buffer.isBuffer(buf), isArray()
-                    body = val
-                } else {
-                    body = JSON.stringify(val)
-                    let fianlHeader = Object.assign(base, {
-                        'Content-Type': 'application/json'
-                    })
-                    response.writeHead(200, 'resolve ok', fianlHeader)
-                }
+   
+                response.writeHead(200, 'resolve ok', Object.assign(base, headers)) // writerHead 会覆盖 setHeader
                 response.end(body)
             })
+            // Promise.resolve(参数) ==> 通过context对象来传递
         }
     }
 }
-
 
 module.exports = App
