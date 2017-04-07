@@ -1,18 +1,13 @@
-// function(exports, module, require) {
+const assert = require('assert');
 
+const p = Promise.resolve(1); 
 
-// exports default 这个是把default导出
-// module.exports.hello = 'world'
-exports.hello = 'world'
+const p1 = p.then(val=>{
+	console.log(val); //1
+	return val + 1
+});// resolved 2
 
-module.exports = {
- hello: 'test'
-}
-
-
-
-
-// }
-
-
-
+const p2 = p1.then(val=>{
+	console.log(val);
+	assert.equal(val, 2) // 不相等报错
+})
