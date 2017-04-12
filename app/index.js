@@ -44,6 +44,7 @@ class App {
                 query: {},
                 method: 'get'
             }
+            // 数据结构
             let context = {
                 req: request,
                 reqCtx: {
@@ -52,16 +53,18 @@ class App {
                 },
                 res: response,
                 resCtx: {
+                    statusMessage: 'resolve ok',
+                    statusCode: 200, // 状态码
                     headers: {}, // reponese 返回的header
                     body: '' // 返回给前端的内容
                 }
             }
             
             this.composeMiddleware(context).then(() => {
-                let { body, headers } = context.resCtx
+                let { body, headers, statusCode, statusMessage } = context.resCtx
                 let base = {'X-powered-by': 'Node.js'}
-   
-                response.writeHead(200, 'resolve ok', Object.assign(base, headers)) // writerHead 会覆盖 setHeader
+
+                response.writeHead(statusCode, statusMessage, Object.assign(base, headers)) // writerHead 会覆盖 setHeader
                 response.end(body)
             })
             // Promise.resolve(参数) ==> 通过context对象来传递
