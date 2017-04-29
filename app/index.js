@@ -13,9 +13,9 @@ const path = require('path')
 class App {
 
     constructor() {
-        this.middlewareArr = []
+        this.middlewareArr = [] // 存放App内use的中间件
         // 设计一个空Promise
-        this.middlewareChain = Promise.resolve()
+        this.middlewareChain = Promise.resolve() // 把中间件挂在这里
     }
     use(middleware) {
         this.middlewareArr.push(middleware)
@@ -53,6 +53,7 @@ class App {
                 },
                 res: response,
                 resCtx: {
+                    hasUser: false,
                     statusMessage: 'resolve ok',
                     statusCode: 200, // 状态码
                     headers: {}, // reponese 返回的header
@@ -63,7 +64,6 @@ class App {
             this.composeMiddleware(context).then(() => {
                 let { body, headers, statusCode, statusMessage } = context.resCtx
                 let base = {'X-powered-by': 'Node.js'}
-
                 response.writeHead(statusCode, statusMessage, Object.assign(base, headers)) // writerHead 会覆盖 setHeader
                 response.end(body)
             })
